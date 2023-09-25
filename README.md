@@ -16,4 +16,21 @@ You can compile this into a directory and a `.war` file by executing this comman
 mvn package
 ```
 
-Learn more at [HappyCoding.io/tutorials/java-server](https://happycoding.io/tutorials/java-server).
+
+
+---------------------------------------------------------------------------------------------------------------
+
+FROM maven:3.6.0-jdk-11-slim AS build
+COPY src /home/app/src
+COPY pom.xml /home/app
+RUN mvn -f /home/app/pom.xml clean package
+FROM tomcat:9.0.80-jdk17
+RUN useradd -ms /bin/bash newuser
+USER newuser
+WORKDIR /home/newuser
+COPY --from=build /home/app/target/*.war /usr/local/tomcat/webapps
+CMD ["catalina.sh", "run"]
+
+docker build -t test-image .
+[root@ip-172-31-6-91 java-maven-tomcat]# docker run -i -t sarthak:latest /bin/bash
+newuser@aba426b16855:~$
